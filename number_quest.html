@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Quest</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0f172a,#1e3a8a);
+  color:white;
+  padding:1rem;
+}
+.game-box{
+  width:100%;
+  max-width:420px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:20px;
+  padding:2rem 1.75rem;
+  text-align:center;
+  backdrop-filter:blur(10px);
+}
+.game-title{font-size:24px;font-weight:600;margin-bottom:0.4rem;}
+.game-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:1.5rem;}
+.divider{border:none;border-top:1px solid rgba(255,255,255,0.12);margin:1.25rem 0;}
+.level-info-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:rgba(255,255,255,0.7);
+  margin-bottom:8px;
+}
+.badge{
+  padding:2px 12px;border-radius:20px;
+  font-size:12px;font-weight:600;
+  display:inline-block;
+}
+.badge-easy{background:#EAF3DE;color:#3B6D11;}
+.badge-medium{background:#FAEEDA;color:#854F0B;}
+.badge-hard{background:#FCEBEB;color:#A32D2D;}
+.start-btn{
+  margin-top:1.25rem;
+  padding:11px 28px;
+  font-size:15px;font-weight:500;
+  border:none;border-radius:10px;
+  background:white;color:#1e3a8a;
+  cursor:pointer;transition:opacity .2s;
+}
+.start-btn:hover{opacity:0.9;}
+/* Game Screen */
+#gameScreen{display:none;}
+.progress-row{display:flex;justify-content:center;gap:8px;margin-bottom:1.5rem;}
+.progress-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  transition:background .3s;
+}
+.progress-dot.active{background:#34d399;}
+.progress-dot.done{background:#93c5fd;}
+.level-badge{
+  display:inline-block;
+  padding:4px 16px;border-radius:20px;
+  font-size:13px;font-weight:600;
+  margin-bottom:0.75rem;
+}
+.range-text{font-size:15px;color:rgba(255,255,255,0.65);margin-bottom:1.25rem;}
+.guess-input{
+  width:100%;padding:11px 14px;
+  font-size:16px;text-align:center;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.1);
+  color:white;margin-bottom:1rem;
+}
+.guess-input::placeholder{color:rgba(255,255,255,0.35);}
+.guess-input:focus{outline:none;border-color:rgba(255,255,255,0.5);}
+.guess-btn{
+  padding:11px 28px;font-size:15px;font-weight:500;
+  border:none;border-radius:10px;
+  background:white;color:#1e3a8a;
+  cursor:pointer;transition:opacity .2s;
+}
+.guess-btn:hover{opacity:0.9;}
+.attempts-bar{
+  font-size:13px;color:rgba(255,255,255,0.5);
+  margin:0.85rem 0 0.25rem;
+}
+.message{font-size:15px;font-weight:500;min-height:22px;margin-top:0.5rem;}
+.msg-low{color:#93c5fd;}
+.msg-high{color:#fcd34d;}
+.msg-correct{color:#6ee7b7;}
+.msg-win{color:#6ee7b7;font-size:16px;}
+.next-btn{
+  margin-top:0.85rem;
+  padding:10px 24px;font-size:15px;font-weight:500;
+  border:none;border-radius:10px;
+  background:#3b82f6;color:white;
+  cursor:pointer;transition:opacity .2s;
+}
+.next-btn:hover{opacity:0.85;}
+</style>
+</head>
+<body>
+<div class="game-box">
+
+  <!-- Start Screen -->
+  <div id="startScreen">
+    <div style="font-size:36px;margin-bottom:0.75rem;">🎯</div>
+    <h1 class="game-title">Number Quest</h1>
+    <p class="game-subtitle">Guess your way through three levels</p>
+    <hr class="divider">
+    <div style="text-align:left;">
+      <div class="level-info-row"><span class="badge badge-easy">Easy</span> Guess 1 – 50</div>
+      <div class="level-info-row"><span class="badge badge-medium">Medium</span> Guess 1 – 100</div>
+      <div class="level-info-row"><span class="badge badge-hard">Hard</span> Guess 1 – 200</div>
+    </div>
+    <button class="start-btn" onclick="startGame()">Start Game →</button>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="gameScreen">
+    <div class="progress-row">
+      <div class="progress-dot" id="dot0"></div>
+      <div class="progress-dot" id="dot1"></div>
+      <div class="progress-dot" id="dot2"></div>
+    </div>
+    <span class="level-badge" id="levelBadge"></span>
+    <p class="range-text" id="rangeText"></p>
+    <input type="number" class="guess-input" id="guessInput" placeholder="Your guess…"
+      onkeydown="if(event.key==='Enter') checkGuess()">
+    <br>
+    <button class="guess-btn" onclick="checkGuess()">Guess</button>
+    <p class="attempts-bar" id="attempts">Attempts: 0</p>
+    <p class="message" id="message"></p>
+    <div id="nextWrap" style="display:none;">
+      <button class="next-btn" onclick="nextLevel()">Next Level →</button>
+    </div>
+  </div>
+
+</div>
+<script>
+const levels = [
+  {name:"Easy",   max:50},
+  {name:"Medium", max:100},
+  {name:"Hard",   max:200}
+];
+const badgeClass = ["badge-easy","badge-medium","badge-hard"];
+let currentLevel = 0, secretNumber, attempts = 0;
+
+function startGame(){
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("gameScreen").style.display  = "block";
+  loadLevel();
+}
+function loadLevel(){
+  attempts = 0;
+  secretNumber = Math.floor(Math.random() * levels[currentLevel].max) + 1;
+  document.getElementById("levelBadge").textContent  = levels[currentLevel].name;
+  document.getElementById("levelBadge").className    = "level-badge " + badgeClass[currentLevel];
+  document.getElementById("rangeText").textContent   = "Guess a number between 1 and " + levels[currentLevel].max;
+  document.getElementById("attempts").textContent    = "Attempts: 0";
+  document.getElementById("message").textContent     = "";
+  document.getElementById("message").className       = "message";
+  document.getElementById("guessInput").value        = "";
+  document.getElementById("nextWrap").style.display  = "none";
+  updateProgress();
+  document.getElementById("guessInput").focus();
+}
+function updateProgress(){
+  for(let i = 0; i < 3; i++){
+    const d = document.getElementById("dot" + i);
+    if(i < currentLevel)      d.className = "progress-dot done";
+    else if(i === currentLevel) d.className = "progress-dot active";
+    else                        d.className = "progress-dot";
+  }
+}
+function checkGuess(){
+  const guess = Number(document.getElementById("guessInput").value);
+  if(!guess && guess !== 0) return;
+  attempts++;
+  document.getElementById("attempts").textContent = "Attempts: " + attempts;
+  const msg = document.getElementById("message");
+  if(guess < secretNumber){
+    msg.textContent = "Too low — try higher";
+    msg.className   = "message msg-low";
+  } else if(guess > secretNumber){
+    msg.textContent = "Too high — try lower";
+    msg.className   = "message msg-high";
+  } else {
+    if(currentLevel < levels.length - 1){
+      msg.textContent = "Correct! You passed " + levels[currentLevel].name + "!";
+      msg.className   = "message msg-correct";
+      document.getElementById("nextWrap").style.display = "block";
+    } else {
+      msg.textContent = "🏆 You conquered all three levels!";
+      msg.className   = "message msg-win";
+      for(let i = 0; i < 3; i++)
+        document.getElementById("dot" + i).className = "progress-dot done";
+    }
+  }
+  document.getElementById("guessInput").value = "";
+  document.getElementById("guessInput").focus();
+}
+function nextLevel(){
+  currentLevel++;
+  loadLevel();
+}
+</script>
+</body>
+</html>
